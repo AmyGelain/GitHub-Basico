@@ -1,14 +1,19 @@
-
 # Informática - 2026
 
 ## Guía de ejercicios: práctica básica de Git en Windows
 
 **Docente:** Ignacio Lavaggi
 
-
-> [!IMPORTANTE] 
-> Esta guía tiene como objetivo practicar los comandos básicos de Git desde consola. Los ejercicios están pensados para realizarse en orden, usando **CMD** o **PowerShell** en Windows.
-
+> [!IMPORTANT]
+> Esta guía tiene como objetivo practicar los comandos básicos de Git desde consola.
+>
+> Los ejercicios están pensados para realizarse **en orden**, usando **CMD** o **Git Bash** en Windows.
+>
+> La idea principal es entender tres situaciones diferentes:
+>
+> 1. Trabajar con Git solamente de forma local.
+> 2. Descargar un repositorio que ya existe en un servidor remoto.
+> 3. Crear un repositorio local y luego publicarlo en un servidor remoto.
 
 ---
 
@@ -16,517 +21,875 @@
 
 Al finalizar esta guía, el estudiante debería poder:
 
-- Configurar Git en una computadora.
-- Crear un repositorio local.
-- Entender qué son los commits.
-- Registrar cambios usando commits.
-- Ver el estado y el historial de un proyecto.
-- Conectar un repositorio local con un repositorio remoto.
-- Subir y traer cambios usando `push` y `pull`.
-- Clonar un repositorio existente.
-- Trabajar con branches o ramas.
-- Usar comandos básicos para revisar diferencias y deshacer cambios simples.
-- Reconocer errores comunes de Git y resolverlos.
+- Instalar y configurar Git.
+- Crear y administrar un repositorio local.
+- Entender qué son `status`, `add`, `commit` y `log`.
+- Clonar un repositorio remoto con `git clone`.
+- Identificar la diferencia entre un repositorio local y uno remoto.
+- Conectar un repositorio local con uno remoto.
+- Utilizar `push` y `pull`.
+- Consultar y modificar remotos.
+- Trabajar con ramas.
+- Utilizar `diff`, `restore` y otros comandos básicos.
+- Reconocer errores comunes de Git.
 
 ---
 
 ## Reglas de trabajo
 
-1. Todos los comandos deben ejecutarse desde consola.
-2. **No se debe usar** GitHub CLI ni GitHub Desktop para esta práctica.
-3. Para crear el repositorio remoto en GitHub, se puede usar la página web de GitHub.
-4. Cada ejercicio debe resolverse dejando evidencia mediante commits.
-5. Los mensajes de commit deben ser claros y relacionados con el cambio realizado.
+1. Todos los comandos de Git deben ejecutarse desde consola.
+2. Se puede utilizar **CMD** o **Git Bash**.
+3. No se debe utilizar GitHub Desktop ni interfaces gráficas para realizar los ejercicios.
+4. Cuando sea necesario crear un repositorio remoto, se utilizará el servidor indicado por el docente.
+5. Durante toda la práctica conviene ejecutar frecuentemente:
 
-<div class="git-info">
+```bash
+git status
+```
 
-Durante toda la guía, conviene ejecutar `git status` antes y después de cada operación importante. Es el comando principal para saber qué está pasando dentro del repositorio.
-
-</div>
+6. Los mensajes de commit deben explicar brevemente qué cambio se realizó.
+7. Las preguntas de cada ejercicio deben responderse en la carpeta o archivo indicado por el docente.
 
 ---
 
-# Ejercicio 1: verificar instalación y configuración inicial
+# Ejercicio 0: instalación y configuración de Git
 
 ## Objetivo
 
-Comprobar que Git esté instalado y configurar el nombre y correo del usuario.
+Preparar la computadora para poder trabajar con Git desde consola.
 
-## Consigna
+> [!IMPORTANT]
+> En una computadora personal, esta configuración normalmente se realiza **una sola vez**.
+>
+> Las computadoras del colegio están **freezadas**, por lo que parte de la configuración puede desaparecer después de reiniciarlas.
+>
+> Por este motivo, durante las clases hay que acostumbrarse a comprobar rápidamente que Git esté instalado y configurado antes de comenzar.
 
-Abrí CMD o PowerShell y ejecutá:
+---
+
+## 0.1 Verificar si Git está instalado
+
+Abrí CMD o Git Bash y ejecutá:
 
 ```bash
 git --version
 ```
 
-Configurá tu nombre:
+Si Git está instalado correctamente debería aparecer algo similar a:
+
+```text
+git version 2.45.0
+```
+
+Si el comando no existe, hay que instalar Git.
+
+Desde PowerShell también se puede instalar con:
+
+```powershell
+winget install --id Git.Git -e
+```
+
+Después de instalarlo, cerrá y volvé a abrir la consola.
+
+---
+
+## 0.2 Configurar nombre de usuario
+
+Ejecutá:
 
 ```bash
 git config --global user.name "Tu Nombre"
 ```
 
-Configurá tu correo (el que usaste para registrarte):
+---
+
+## 0.3 Configurar correo
+
+Ejecutá:
 
 ```bash
 git config --global user.email "tu@email.com"
 ```
 
-Verificá la configuración:
+Conviene utilizar el mismo correo con el que te registraste en el servidor remoto.
+
+---
+
+## 0.4 Verificar la configuración
+
+```bash
+git config --global user.name
+git config --global user.email
+```
+
+También se puede consultar toda la configuración:
 
 ```bash
 git config --list
 ```
 
-## Preguntas
+---
 
-Todas las preguntas que aparezcan de acá en adelante, responderlas en la carpeta. Cualquier pregunta de estas puede entrar en el examen. 
+## 0.5 Configurar `main` como rama inicial
 
-1. ¿Qué versión de Git aparece instalada?
-2. ¿Qué datos quedan asociados a los commits?
-3. ¿Por qué conviene configurar correctamente el correo?
+Para que los repositorios nuevos utilicen `main`:
+
+```bash
+git config --global init.defaultBranch main
+```
 
 ---
 
-# Ejercicio 2: crear un repositorio local
+## 0.6 Error: `detected dubious ownership`
+
+En las computadoras compartidas del colegio puede aparecer un error parecido a:
+
+```text
+fatal: detected dubious ownership in repository at 'C:/...'
+```
+
+Git muestra este mensaje cuando considera que la carpeta pertenece a otro usuario de Windows.
+
+Esto puede ocurrir en computadoras compartidas, restauradas o freezadas.
+
+Git normalmente muestra también un comando para solucionar el problema.
+
+La forma recomendada es agregar **solamente el repositorio con el que estamos trabajando** como carpeta segura:
+
+```bash
+git config --global --add safe.directory "C:/ruta/del/repositorio"
+```
+
+Después volver a probar:
+
+```bash
+git status
+```
+
+> [!WARNING]
+> No conviene marcar indiscriminadamente todas las carpetas de la computadora como seguras.
+>
+> Agregá solamente la carpeta del repositorio que estés utilizando.
+
+---
+
+## 0.7 Comprobación final
+
+Antes de continuar:
+
+```bash
+git --version
+git config --global user.name
+git config --global user.email
+```
+
+### Preguntas
+
+1. ¿Qué versión de Git está instalada?
+2. ¿Qué nombre quedó configurado?
+3. ¿Qué correo quedó configurado?
+4. ¿Para qué sirve configurar nombre y correo?
+5. ¿Por qué en las computadoras del colegio puede ser necesario repetir esta configuración?
+
+---
+
+# Ejercicio 1: crear y gestionar un repositorio LOCAL
 
 ## Objetivo
 
-Crear una carpeta de trabajo y convertirla en un repositorio de Git.
+Crear un repositorio y trabajar con Git **sin utilizar ningún servidor remoto**.
 
-## Consigna
+En este ejercicio todo ocurre dentro de nuestra computadora.
 
-Creá una carpeta llamada `practica-git`:
+---
+
+## 1.1 Crear una carpeta
+
+Desde CMD o Git Bash:
 
 ```bash
-mkdir practica-git
-cd practica-git
+mkdir practica-git-local
+cd practica-git-local
 ```
 
-Inicializá Git:
+---
+
+## 1.2 Inicializar Git
 
 ```bash
 git init
 ```
 
-Verificá el estado:
+Verificar:
 
 ```bash
 git status
 ```
 
-## Explicación
-
-`git init` crea un repositorio local. A partir de ese momento, Git puede registrar los cambios que ocurran dentro de esa carpeta.
-
-## Preguntas
-
-1. ¿Qué significa que una carpeta sea un repositorio?
-2. ¿Qué muestra `git status` en este momento?
+`git init` convierte la carpeta actual en un repositorio Git.
 
 ---
 
-# Ejercicio 3: crear archivos y hacer el primer commit
+## 1.3 Crear un archivo
 
-## Objetivo
+Creá un archivo llamado:
 
-Crear archivos, agregarlos al área de preparación y registrar el primer commit.
-
-## Consigna
-
-Creá un archivo llamado `README.md`:
-
-```bash
-echo "# Práctica Git" > README.md
+```text
+README.md
 ```
 
-Verificá el estado:
+Podés hacerlo desde Visual Studio Code o con:
+
+```bash
+echo "# Practica Git Local" > README.md
+```
+
+Consultar:
 
 ```bash
 git status
 ```
 
-Agregá el archivo al próximo commit:
+---
+
+## 1.4 Agregar el archivo al staging
 
 ```bash
 git add README.md
 ```
 
-Creá el primer commit:
-
-```bash
-git commit -m "Agrega README inicial"
-```
-
-Verificá nuevamente:
+Volver a consultar:
 
 ```bash
 git status
 ```
 
-## Explicación
-
-Un **commit** es un registro de cambios. Sirve para guardar un punto importante del proyecto y poder consultar su historial.
-
-## Preguntas
-
-1. ¿Qué diferencia hay entre crear un archivo y hacer un commit?
-2. ¿Para qué sirve `git add`?
-3. ¿Qué debería mostrar `git status` después del commit?
-
 ---
 
-# Ejercicio 4: modificar archivos y crear nuevos commits
-
-## Objetivo
-
-Practicar el ciclo básico de Git: modificar, revisar, agregar y hacer commits.
-
-## Consigna
-
-Agregá este contenido al archivo `README.md`:
+## 1.5 Crear el primer commit
 
 ```bash
-echo "Este proyecto fue creado para practicar comandos básicos de Git." >> README.md
+git commit -m "Crea README inicial"
 ```
 
-Revisá el estado:
+Consultar:
 
 ```bash
 git status
 ```
 
-Revisá la diferencia:
-
-```bash
-git diff
-```
-
-Agregá los cambios:
-
-```bash
-git add README.md
-```
-
-Creá un commit:
-
-```bash
-git commit -m "Agrega descripción del proyecto"
-```
-
-## Explicación
-
-`git diff` muestra qué cambió en los archivos antes de guardar esos cambios en un commit.
-
-## Preguntas
-
-1. ¿Qué muestra `git diff`?
-2. ¿Por qué conviene revisar los cambios antes de hacer commit?
-3. ¿El segundo commit reemplaza al primero o se suma al historial?
-
----
-
-# Ejercicio 5: crear varios archivos y usar `git add .`
-
-## Objetivo
-
-Practicar cómo agregar varios archivos al mismo tiempo.
-
-## Consigna
-
-Creá una carpeta llamada `src`:
-
-```bash
-mkdir src
-```
-
-Creá un archivo dentro de esa carpeta:
-
-```bash
-echo "print('Hola Git')" > src/app.py
-```
-
-Creá otro archivo:
-
-```bash
-echo "Notas de la práctica" > notas.txt
-```
-
-Verificá el estado:
-
-```bash
-git status
-```
-
-Agregá todos los cambios:
-
-```bash
-git add .
-```
-
-Creá un commit:
-
-```bash
-git commit -m "Agrega archivos iniciales del proyecto"
-```
-
-## Explicación
-
-`git add .` agrega todos los cambios de la carpeta actual. Es útil, pero hay que usarlo con cuidado para no agregar archivos que no correspondan.
-
-## Preguntas
-
-1. ¿Qué diferencia hay entre `git add archivo` y `git add .`?
-2. ¿Qué archivos se agregaron en este ejercicio?
-
----
-
-# Ejercicio 6: ver historial del proyecto
-
-## Objetivo
-
-Consultar los commits realizados.
-
-## Consigna
-
-Ver el historial completo:
-
-```bash
-git log
-```
-
-Ver el historial resumido:
+Y luego:
 
 ```bash
 git log --oneline
 ```
 
-Ver el historial con forma de gráfico:
+---
+
+## 1.6 Modificar el archivo
+
+Agregá una nueva línea:
 
 ```bash
-git log --oneline --graph --all
+echo "Este repositorio existe solamente en mi computadora." >> README.md
 ```
 
-## Explicación
+Verificar:
 
-El historial permite ver los commits realizados, sus mensajes, sus autores y sus identificadores.
+```bash
+git status
+```
 
-## Preguntas
+Ver exactamente qué cambió:
 
-1. ¿Cuántos commits tiene el proyecto?
-2. ¿Qué diferencia hay entre `git log` y `git log --oneline`?
-3. ¿Para qué puede servir revisar el historial?
+```bash
+git diff
+```
 
 ---
 
-# Ejercicio 7: crear un repositorio remoto en GitHub y conectarlo
+## 1.7 Crear un segundo commit
 
-## Objetivo
+```bash
+git add README.md
+git commit -m "Agrega descripcion del repositorio"
+```
 
-Conectar el repositorio local con un repositorio remoto.
+Consultar el historial:
 
-## Consigna
+```bash
+git log --oneline
+```
 
-Desde la página web de GitHub, creá un repositorio vacío llamado:
+---
+
+## 1.8 Crear otro archivo
+
+Creá:
 
 ```text
-practica-git
+notas.txt
 ```
 
-No agregues README, `.gitignore` ni licencia desde GitHub, porque ya existe contenido local.
-
-Luego, desde la consola, dentro de la carpeta del proyecto, agregá el remoto:
+Por ejemplo:
 
 ```bash
-git remote add origin https://github.com/usuario/practica-git.git
+echo "Estoy practicando Git." > notas.txt
 ```
 
-Verificá el remoto:
+Ahora agregá todos los cambios:
+
+```bash
+git add .
+```
+
+Y creá otro commit:
+
+```bash
+git commit -m "Agrega archivo de notas"
+```
+
+---
+
+## Flujo que hay que entender
+
+```text
+Modificar archivos
+       ↓
+git status
+       ↓
+git add
+       ↓
+git commit
+```
+
+Hasta este momento:
+
+- No usamos Internet.
+- No usamos un servidor.
+- No usamos `push`.
+- No usamos `pull`.
+- Git funcionó completamente de forma local.
+
+### Preguntas
+
+1. ¿Qué hace `git init`?
+2. ¿Qué diferencia hay entre modificar un archivo y hacer un commit?
+3. ¿Para qué sirve `git add`?
+4. ¿Qué muestra `git status`?
+5. ¿Qué muestra `git log --oneline`?
+6. ¿Se necesita Internet para utilizar Git de forma local?
+
+---
+
+# Ejercicio 2: crear un repositorio REMOTO y descargarlo con `git clone`
+
+## Objetivo
+
+Crear un repositorio remoto en GitHub, acceder a la unidad de red del curso y descargar allí una copia local utilizando `git clone`.
+
+---
+
+## 2.1 Abrir la unidad de red del curso
+
+Cada curso tiene asignada una unidad de red en Windows.
+
+Según corresponda, puede ser:
+
+```text
+X:
+```
+
+o:
+
+```text
+W:
+```
+
+Primero abrí la unidad de red desde el Explorador de archivos.
+
+Si Windows solicita credenciales, ingresalas normalmente.
+
+Una vez que la unidad esté accesible, abrí CMD o Git Bash.
+
+---
+
+## 2.2 Navegar a la unidad desde consola
+
+Desde CMD:
+
+```bash
+X:
+```
+
+o:
+
+```bash
+W:
+```
+
+según la unidad correspondiente al curso.
+
+Verificá el contenido:
+
+```bash
+dir
+```
+
+Entrá a la carpeta donde vas a trabajar.
+
+---
+
+## 2.3 Crear un repositorio remoto en GitHub
+
+Entrá a GitHub desde el navegador.
+
+Creá un repositorio nuevo.
+
+En este ejercicio, el repositorio debe existir primero en GitHub.
+
+Podés dejar que GitHub cree el repositorio con un archivo inicial, por ejemplo un `README.md`, para que el repositorio remoto no esté vacío.
+
+Copiá la URL HTTPS del repositorio.
+
+---
+
+## 2.4 Clonar el repositorio dentro de la unidad de red
+
+Desde CMD o Git Bash, ubicado dentro de la unidad `X:` o `W:`:
+
+```bash
+git clone URL_DEL_REPOSITORIO
+```
+
+Esto creará una carpeta nueva dentro de la unidad de red.
+
+---
+
+## 2.5 Entrar al repositorio clonado
+
+```bash
+cd NOMBRE_DEL_REPOSITORIO
+```
+
+Consultar:
+
+```bash
+git status
+```
+
+Ver el remoto:
 
 ```bash
 git remote -v
 ```
 
-Renombrá la rama principal a `main`:
+---
+
+## 2.6 Modificar el proyecto
+
+Abrí la carpeta del repositorio con Visual Studio Code.
+
+Realizá una modificación simple en alguno de los archivos.
+
+Después, desde consola:
 
 ```bash
-git branch -M main
+git status
 ```
-
-Subí el proyecto por primera vez:
-
-```bash
-git push -u origin main
-```
-
-## Explicación
-
-Un **remoto** es una ubicación externa donde también está guardado el repositorio. Por ejemplo, GitHub.
-
-`push` significa subir los commits locales al repositorio remoto.
-
-## Preguntas
-
-1. ¿Por qué primero hay que crear el repositorio remoto en GitHub?
-2. ¿Qué función cumple `origin`?
-3. ¿Qué hace `git push -u origin main`?
 
 ---
 
-# Ejercicio 8: clonar un repositorio
-
-## Objetivo
-
-Descargar una copia completa de un repositorio remoto.
-
-## Consigna
-
-Salí de la carpeta actual:
+## 2.7 Guardar el cambio localmente
 
 ```bash
-cd ..
+git add .
+git commit -m "Modifica repositorio clonado"
 ```
 
-Cloná el repositorio en otra carpeta:
-
-```bash
-git clone https://github.com/usuario/practica-git.git practica-git-copia
-```
-
-Entrá a la carpeta clonada:
-
-```bash
-cd practica-git-copia
-```
-
-Verificá los archivos:
-
-```bash
-ls
-```
-
-Verificá el remoto:
-
-```bash
-git remote -v
-```
-
-## Explicación
-
-**Clonar** significa descargar un repositorio remoto en la computadora. Al clonar, no solo se descargan los archivos actuales, sino también el historial de commits.
-
-## Preguntas
-
-1. ¿Qué diferencia hay entre crear una carpeta común y clonar un repositorio?
-2. ¿La copia clonada conserva el historial?
-3. ¿Qué muestra `git remote -v` en el repositorio clonado?
+Hasta acá, el commit existe en la copia local que está guardada en la unidad de red.
 
 ---
 
-# Ejercicio 9: practicar `pull` y `push`
-
-## Objetivo
-
-Entender cómo se sincronizan los cambios entre la copia local y el repositorio remoto.
-
-## Consigna
-
-En la carpeta clonada, modificá el archivo `notas.txt`:
-
-```bash
-echo "Cambio realizado desde la copia clonada." >> notas.txt
-```
-
-Agregá y commiteá:
-
-```bash
-git add notas.txt
-git commit -m "Actualiza notas desde copia clonada"
-```
-
-Subí los cambios:
+## 2.8 Subir el cambio a GitHub
 
 ```bash
 git push
 ```
 
-Ahora volvé a la carpeta original:
+Ahora el commit también queda almacenado en el repositorio remoto de GitHub.
 
-```bash
-cd ..
-cd practica-git
+---
+
+## Flujo que hay que entender
+
+```text
+Crear repositorio en GitHub
+          ↓
+Copiar URL
+          ↓
+Entrar a X: o W:
+          ↓
+      git clone
+          ↓
+Modificar archivos
+          ↓
+      git add .
+          ↓
+     git commit
+          ↓
+      git push
+          ↓
+Actualizar repositorio en GitHub
 ```
 
-Traé los cambios remotos:
+### Preguntas
+
+1. ¿Cuál se creó primero en este ejercicio: el repositorio remoto o la copia local?
+2. ¿Qué hace `git clone`?
+3. ¿Dónde queda guardada la copia local del repositorio?
+4. ¿Qué es `origin`?
+5. ¿El `commit` sube automáticamente los cambios a GitHub?
+6. ¿Qué hace `git push`?
+
+---
+
+# Ejercicio 3: crear un repositorio LOCAL en la unidad de red y subirlo a GitHub
+
+## Objetivo
+
+Crear un repositorio desde cero dentro de la unidad de red del curso y luego publicarlo en GitHub.
+
+En este ejercicio, el repositorio local debe existir primero.
+
+---
+
+## 3.1 Abrir la unidad de red
+
+Abrí desde Windows la unidad correspondiente al curso:
+
+```text
+X:
+```
+
+o:
+
+```text
+W:
+```
+
+Si Windows solicita credenciales, ingresalas.
+
+Después abrí CMD o Git Bash.
+
+---
+
+## 3.2 Navegar a la unidad desde consola
+
+```bash
+X:
+```
+
+o:
+
+```bash
+W:
+```
+
+según corresponda.
+
+---
+
+## 3.3 Crear la carpeta del proyecto
+
+```bash
+mkdir practica-git-remoto
+cd practica-git-remoto
+```
+
+---
+
+## 3.4 Inicializar Git
+
+```bash
+git init
+```
+
+Consultar:
+
+```bash
+git status
+```
+
+---
+
+## 3.5 Crear archivos
+
+Creá:
+
+```text
+README.md
+```
+
+y:
+
+```text
+programa.py
+```
+
+Los archivos pueden crearse desde Visual Studio Code.
+
+---
+
+## 3.6 Crear el primer commit
+
+```bash
+git status
+git add .
+git commit -m "Crea proyecto inicial"
+```
+
+Consultar:
+
+```bash
+git log --oneline
+```
+
+Hasta este punto, el repositorio existe solamente en la unidad de red.
+
+---
+
+## 3.7 Crear un repositorio vacío en GitHub
+
+Entrá a GitHub desde el navegador.
+
+Creá un repositorio nuevo.
+
+> [!IMPORTANT]
+> En este ejercicio el repositorio remoto debe crearse **vacío**.
+>
+> No agregar README, `.gitignore` ni licencia desde GitHub, porque el contenido ya existe en el repositorio local.
+
+Copiá la URL HTTPS del repositorio.
+
+---
+
+## 3.8 Conectar el repositorio local con GitHub
+
+Desde la consola, dentro de la carpeta del proyecto:
+
+```bash
+git remote add origin URL_DEL_REPOSITORIO
+```
+
+Verificar:
+
+```bash
+git remote -v
+```
+
+---
+
+## 3.9 Asegurar que la rama principal sea `main`
+
+```bash
+git branch -M main
+```
+
+---
+
+## 3.10 Realizar el primer push
+
+```bash
+git push -u origin main
+```
+
+La opción `-u` vincula la rama local `main` con la rama remota correspondiente.
+
+Después de esta primera vez, normalmente alcanza con:
+
+```bash
+git push
+```
+
+---
+
+## 3.11 Hacer un nuevo cambio
+
+Modificá alguno de los archivos del proyecto.
+
+Después:
+
+```bash
+git status
+git add .
+git commit -m "Agrega nuevo cambio"
+git push
+```
+
+---
+
+## Flujo que hay que entender
+
+```text
+Entrar a X: o W:
+       ↓
+Crear carpeta
+       ↓
+    git init
+       ↓
+Crear archivos
+       ↓
+    git add .
+       ↓
+   git commit
+       ↓
+Crear repositorio vacío en GitHub
+       ↓
+git remote add origin URL
+       ↓
+git push -u origin main
+```
+
+### Preguntas
+
+1. ¿Cuál se creó primero en este ejercicio: el repositorio local o el remoto?
+2. ¿Dónde está físicamente guardado el repositorio local?
+3. ¿Qué hace `git remote add origin URL`?
+4. ¿Para qué sirve `git remote -v`?
+5. ¿Qué hace `git push -u origin main`?
+6. ¿Por qué el repositorio remoto debe crearse vacío?
+7. ¿Cuál es la diferencia principal entre el ejercicio 2 y el ejercicio 3?
+
+---
+
+# Ejercicio 4: practicar `pull` y `push`
+
+## Objetivo
+
+Entender cómo se sincronizan los cambios entre una copia local y el repositorio remoto.
+
+## Consigna
+
+Utilizá el repositorio del ejercicio 3.
+
+Desde la página del servidor, realizá un pequeño cambio en un archivo del repositorio.
+
+Después, en la copia local:
 
 ```bash
 git pull
 ```
 
-Abrí o revisá `notas.txt` y verificá que el cambio haya llegado.
+Verificá que el cambio aparezca.
 
-## Explicación
+Luego realizá otro cambio local:
 
-`push` sube cambios al remoto.
+```bash
+git status
+git add .
+git commit -m "Agrega cambio local"
+git push
+```
 
-`pull` trae cambios desde el remoto y los aplica en la copia local.
+### Preguntas
 
-## Preguntas
-
-1. ¿Qué pasaría si se hace un cambio en una copia pero no se ejecuta `push`?
-2. ¿Qué hace `pull` en la carpeta original?
-3. ¿Por qué es importante hacer `pull` antes de empezar a trabajar?
+1. ¿Qué hace `git push`?
+2. ¿Qué hace `git pull`?
+3. ¿Qué pasa si hacemos un commit pero nunca ejecutamos `git push`?
+4. ¿Por qué conviene hacer `git pull` antes de comenzar a trabajar en un proyecto compartido?
 
 ---
 
-# Ejercicio 10: trabajar con branches o ramas
+# Ejercicio 5: ver diferencias e historial
+
+## Objetivo
+
+Utilizar Git para investigar qué cambios existen y qué cambios se realizaron anteriormente.
+
+Modificar un archivo sin hacer commit.
+
+Después ejecutar:
+
+```bash
+git status
+```
+
+Luego:
+
+```bash
+git diff
+```
+
+Agregar el archivo:
+
+```bash
+git add .
+```
+
+Ahora ejecutar:
+
+```bash
+git diff --staged
+```
+
+Crear el commit:
+
+```bash
+git commit -m "Practica diff"
+```
+
+Consultar:
+
+```bash
+git log
+```
+
+y:
+
+```bash
+git log --oneline
+```
+
+### Preguntas
+
+1. ¿Qué muestra `git diff`?
+2. ¿Qué muestra `git diff --staged`?
+3. ¿Qué diferencia hay entre `git log` y `git log --oneline`?
+4. ¿Para qué sirve consultar el historial?
+
+---
+
+# Ejercicio 6: trabajar con branches o ramas
 
 ## Objetivo
 
 Crear una rama para trabajar sin modificar directamente `main`.
 
-## Explicación
+Una **branch** o rama es una línea de trabajo separada dentro del mismo repositorio.
 
-Una **branch** o **rama** es una línea de trabajo separada dentro del mismo proyecto.
-
-La rama principal suele llamarse `main`. Se recomienda usar ramas para probar cambios, agregar funcionalidades o corregir errores sin alterar directamente la versión principal del proyecto.
-
-Por ejemplo:
-
-```text
-main                 versión principal
-feature/menu         desarrollo de un menú
-fix/error-texto      corrección de un error
-```
-
-## Consigna
-
-Ver ramas existentes:
+Ver ramas:
 
 ```bash
 git branch
 ```
 
-Crear y entrar a una rama nueva:
+Crear una rama y entrar en ella:
 
 ```bash
 git switch -c feature/presentacion
 ```
 
-Modificar el README:
+Modificar `README.md`.
 
-```bash
-echo "Trabajo realizado en una rama nueva." >> README.md
-```
-
-Guardar el cambio:
+Después:
 
 ```bash
 git add README.md
-git commit -m "Agrega texto desde rama feature"
+git commit -m "Agrega presentacion desde rama"
 ```
 
-Ver el historial:
+Consultar:
 
 ```bash
 git log --oneline --graph --all
@@ -538,374 +901,400 @@ Volver a `main`:
 git switch main
 ```
 
-Verificá el contenido de `README.md`.
+### Preguntas
 
-## Preguntas
-
-1. ¿El cambio hecho en la rama aparece automáticamente en `main`?
-2. ¿Para qué sirve trabajar en una rama separada?
-3. ¿Qué muestra el gráfico del historial?
+1. ¿El cambio realizado en la rama aparece automáticamente en `main`?
+2. ¿Para qué puede servir trabajar en una rama diferente?
+3. ¿Qué muestra `git log --oneline --graph --all`?
 
 ---
 
-# Ejercicio 11: unir una rama con `merge`
+# Ejercicio 7: unir una rama con `merge`
 
 ## Objetivo
 
-Integrar los cambios de una rama dentro de `main`.
+Integrar los cambios de otra rama dentro de `main`.
 
-## Consigna
+Primero asegurate de estar en `main`:
 
-Estando en `main`, ejecutar:
+```bash
+git switch main
+```
+
+Luego:
 
 ```bash
 git merge feature/presentacion
 ```
 
-Verificar el estado:
+Consultar:
 
 ```bash
 git status
-```
-
-Ver historial:
-
-```bash
 git log --oneline --graph --all
 ```
 
-Subir los cambios:
+Subir:
 
 ```bash
 git push
 ```
 
-## Explicación
+### Preguntas
 
-`merge` significa fusionar o unir los cambios de una rama con otra. En este caso, se integran los cambios de `feature/presentacion` dentro de `main`.
-
-## Preguntas
-
-1. ¿Qué cambió después del `merge`?
-2. ¿Por qué primero hay que estar parado en `main`?
-3. ¿Qué se sube al hacer `git push` después del merge?
+1. ¿Qué hace `git merge`?
+2. ¿Por qué importa en qué rama estamos ubicados antes del merge?
+3. ¿Qué cambió en `main` después de realizarlo?
 
 ---
 
-# Ejercicio 12: usar `fetch` y compararlo con `pull`
+# Ejercicio 8: comparar `fetch` y `pull`
 
 ## Objetivo
 
-Entender la diferencia entre traer información remota y aplicar cambios.
+Entender la diferencia entre descargar información del remoto y aplicar sus cambios.
 
-## Consigna
-
-Desde una de las carpetas, hacé un cambio, commit y push.
-
-En la otra carpeta, ejecutá:
+Ejecutar:
 
 ```bash
 git fetch
 ```
 
-Luego revisá el historial:
+Consultar:
 
 ```bash
 git log --oneline --all --graph
 ```
 
-Después ejecutá:
+Luego:
 
 ```bash
 git pull
 ```
 
-## Explicación
+### Preguntas
 
-`fetch` trae información desde el remoto, pero no modifica directamente los archivos locales.
-
-`pull` trae los cambios remotos y además los aplica en la rama actual.
-
-## Preguntas
-
-1. ¿Qué diferencia hay entre `fetch` y `pull`?
-2. ¿Por qué `fetch` puede ser útil antes de actualizar?
-3. ¿Cuál de los dos modifica los archivos locales?
+1. ¿Qué hace `git fetch`?
+2. ¿Qué hace `git pull`?
+3. ¿Cuál modifica directamente nuestros archivos?
+4. ¿Para qué puede ser útil ejecutar `fetch`?
 
 ---
 
-# Ejercicio 13: deshacer cambios antes del commit
+# Ejercicio 9: deshacer cambios antes de un commit
 
 ## Objetivo
 
-Practicar cómo descartar cambios locales que todavía no fueron commiteados.
+Descartar un cambio local todavía no registrado.
 
-## Consigna
+Modificar `README.md`.
 
-Modificá `README.md` agregando una línea de prueba:
-
-```bash
-echo "Texto que voy a descartar." >> README.md
-```
-
-Verificá el estado:
+Consultar:
 
 ```bash
 git status
-```
-
-Revisá la diferencia:
-
-```bash
 git diff
 ```
 
-Descartá el cambio:
+Después:
 
 ```bash
 git restore README.md
 ```
 
-Verificá nuevamente:
+Consultar nuevamente:
 
 ```bash
 git status
 ```
 
-## Explicación
+### Preguntas
 
-`git restore` permite volver un archivo al último estado guardado por Git, siempre que el cambio no haya sido commiteado.
-
-## Preguntas
-
-1. ¿El cambio descartado se puede recuperar fácilmente?
-2. ¿Por qué hay que tener cuidado con `git restore`?
-3. ¿Qué muestra `git status` después de restaurar el archivo?
+1. ¿Qué hizo `git restore`?
+2. ¿El cambio descartado fue incluido en algún commit?
+3. ¿Por qué hay que tener cuidado al utilizar este comando?
 
 ---
 
-# Ejercicio 14: sacar archivos del staging
+# Ejercicio 10: sacar archivos del staging
 
 ## Objetivo
 
-Entender la diferencia entre modificar un archivo y prepararlo para commit.
+Comprender la diferencia entre un archivo modificado y un archivo preparado para commit.
 
-## Consigna
+Modificar un archivo.
 
-Modificá `notas.txt`:
-
-```bash
-echo "Cambio temporal." >> notas.txt
-```
-
-Agregá el archivo al staging:
+Agregarlo:
 
 ```bash
-git add notas.txt
+git add archivo.txt
 ```
 
-Verificá el estado:
+Consultar:
 
 ```bash
 git status
 ```
 
-Sacalo del staging:
+Sacarlo del staging:
 
 ```bash
-git restore --staged notas.txt
+git restore --staged archivo.txt
 ```
 
-Verificá otra vez:
+Consultar nuevamente:
 
 ```bash
 git status
 ```
 
-## Explicación
+### Preguntas
 
-El área de staging contiene los cambios que van a entrar en el próximo commit. `git restore --staged` saca un archivo de esa área, pero no borra sus modificaciones.
-
-## Preguntas
-
-1. ¿El archivo perdió los cambios?
-2. ¿Qué cambió después de usar `git restore --staged`?
-3. ¿Para qué puede servir sacar un archivo del staging?
+1. ¿Se borraron las modificaciones del archivo?
+2. ¿Qué cambió después de `git restore --staged`?
+3. ¿Qué es el staging?
 
 ---
 
-# Ejercicio 15: resolver un error común
+# Ejercicio 11: cambiar la dirección de un remoto
 
 ## Objetivo
 
-Reconocer y resolver un problema típico al trabajar con repositorios remotos.
+Reconocer y resolver el error `remote origin already exists`.
 
-## Consigna
-
-Intentá agregar nuevamente el remoto `origin`:
+Ver el remoto:
 
 ```bash
-git remote add origin https://github.com/usuario/otro-repo.git
+git remote -v
 ```
 
-Es probable que aparezca el error:
+Intentar agregar otro `origin`:
+
+```bash
+git remote add origin URL
+```
+
+Debería aparecer:
 
 ```text
 remote origin already exists
 ```
 
-Verificá los remotos:
+Para modificar la URL existente:
+
+```bash
+git remote set-url origin URL_NUEVA
+```
+
+Consultar:
 
 ```bash
 git remote -v
 ```
 
-Corregí la URL del remoto:
+### Preguntas
 
-```bash
-git remote set-url origin https://github.com/usuario/practica-git.git
-```
-
-Volvé a verificar:
-
-```bash
-git remote -v
-```
-
-## Explicación
-
-Este error aparece cuando se intenta crear un remoto llamado `origin`, pero ya existe uno con ese nombre. En lugar de crearlo otra vez, hay que modificar su URL.
-
-## Preguntas
-
-1. ¿Por qué aparece el error?
-2. ¿Qué diferencia hay entre `git remote add` y `git remote set-url`?
-3. ¿Cómo se verifica que el remoto quedó bien configurado?
+1. ¿Por qué aparece `remote origin already exists`?
+2. ¿Qué diferencia hay entre `remote add` y `remote set-url`?
+3. ¿Cómo verificamos la URL actual del remoto?
 
 ---
 
-# Ejercicio 16: mini proyecto final
+# Ejercicio 12: mini proyecto final
 
 ## Objetivo
 
-Integrar los comandos principales vistos en la guía.
+Integrar los conceptos principales de la guía.
 
-## Consigna
+Crear un repositorio llamado:
 
-Crear un repositorio llamado `mini-proyecto-git`.
+```text
+mini-proyecto-git
+```
 
-Debe tener:
+Debe contener:
 
 ```text
 README.md
-src/app.py
+src/
+    app.py
 notas.txt
 ```
-(src es una carpeta, dentro de ella habrá un archivo app.py)
 
-
-El archivo `README.md` debe incluir:
+El `README.md` debe incluir:
 
 ```text
 Nombre del proyecto
 Descripción
-Comandos de Git usados
+Comandos de Git utilizados
 ```
 
-El archivo `src/app.py` debe imprimir un mensaje simple.
+`src/app.py` debe contener un programa Python sencillo.
 
-El archivo `notas.txt` debe incluir al menos tres notas sobre lo aprendido.
+`notas.txt` debe incluir al menos tres notas sobre lo aprendido.
 
 ## Requisitos
 
-El proyecto debe tener al menos:
+El proyecto debe tener:
 
 - Un repositorio local.
-- Un repositorio remoto en GitHub.
-- Tres commits con mensajes claros.
+- Un repositorio remoto en el servidor indicado por el docente.
+- Al menos tres commits con mensajes claros.
 - Una rama llamada `feature/mejora-readme`.
 - Un merge de esa rama hacia `main`.
 - Un push final al remoto.
 
-## Comandos que deberían aparecer durante el trabajo
+## Entrega
+
+Entregar:
+
+1. URL del repositorio remoto.
+2. Captura o salida de:
 
 ```bash
-git init
-git status
-git add .
-git commit -m "mensaje"
-git branch
-git switch -c feature/mejora-readme
-git switch main
-git merge feature/mejora-readme
-git remote add origin URL
-git push -u origin main
-git push
 git log --oneline --graph --all
 ```
 
-## Entrega
+3. Captura o salida de:
 
-Debés entregar:
+```bash
+git status
+```
 
-1. La URL del repositorio remoto.
-2. Una captura de `git log --oneline --graph --all`.
-3. Una captura de `git status` mostrando que no quedan cambios pendientes.
-4. Respuestas breves:
-   - ¿Qué es un commit?
-   - ¿Qué es una branch?
-   - ¿Qué diferencia hay entre `push` y `pull`?
-   - ¿Qué diferencia hay entre `fetch` y `pull`?
-   - ¿Para qué sirve `git status`?
+sin cambios pendientes.
+
+4. Responder:
+
+- ¿Qué es un repositorio local?
+- ¿Qué es un repositorio remoto?
+- ¿Qué es un commit?
+- ¿Qué hace `git clone`?
+- ¿Qué diferencia hay entre `push` y `pull`?
+- ¿Qué es una branch?
+- ¿Para qué sirve `git status`?
 
 ---
 
-<div class="git-card">
+# Cheatsheet de comandos Git
 
-## Resumen de comandos practicados
+## Configuración
 
 | Acción | Comando |
 |---|---|
-| Ver versión de Git | `git --version` |
-| Configurar usuario | `git config --global user.name "Nombre"` |
-| Configurar email | `git config --global user.email "email"` |
-| Crear repo local | `git init` |
-| Ver estado | `git status` |
-| Agregar archivo | `git add archivo` |
-| Agregar todo | `git add .` |
-| Crear commit | `git commit -m "mensaje"` |
-| Ver historial | `git log --oneline` |
-| Ver diferencias | `git diff` |
-| Conectar remoto | `git remote add origin URL` |
-| Ver remotos | `git remote -v` |
-| Subir cambios | `git push` |
-| Traer cambios | `git pull` |
-| Traer sin aplicar | `git fetch` |
-| Clonar repo | `git clone URL` |
-| Ver ramas | `git branch` |
-| Crear y entrar a rama | `git switch -c nombre-rama` |
-| Cambiar de rama | `git switch nombre-rama` |
-| Fusionar rama | `git merge nombre-rama` |
-| Restaurar archivo | `git restore archivo` |
-| Sacar del staging | `git restore --staged archivo` |
-
-</div>
+| Ver versión instalada | `git --version` |
+| Configurar nombre | `git config --global user.name "Nombre"` |
+| Configurar correo | `git config --global user.email "correo"` |
+| Ver configuración | `git config --list` |
+| Usar `main` por defecto | `git config --global init.defaultBranch main` |
+| Agregar repo como carpeta segura | `git config --global --add safe.directory "RUTA"` |
 
 ---
 
-## Criterios de evaluación para el TP
+## Trabajo local
 
-| Criterio | Logrado | En proceso |
-|---|---|---|
-| Configura Git correctamente |  |  |
-| Crea repositorio local |  |  |
-| Realiza commits claros |  |  |
-| Usa `status`, `diff` y `log` |  |  |
-| Conecta repositorio remoto |  |  |
-| Usa `push` y `pull` correctamente |  |  |
-| Clona un repositorio |  |  |
-| Crea y usa branches |  |  |
-| Realiza merge correctamente |  |  |
-| Resuelve errores comunes |  |  |
-| Entrega el mini proyecto final |  |  |
+| Acción | Comando |
+|---|---|
+| Crear repositorio | `git init` |
+| Ver estado | `git status` |
+| Agregar un archivo | `git add archivo` |
+| Agregar todos los cambios | `git add .` |
+| Crear commit | `git commit -m "mensaje"` |
+| Ver historial | `git log` |
+| Ver historial corto | `git log --oneline` |
+| Ver cambios | `git diff` |
+| Ver cambios preparados | `git diff --staged` |
 
+---
+
+## Repositorios remotos
+
+| Acción | Comando |
+|---|---|
+| Clonar repositorio | `git clone URL` |
+| Ver remotos | `git remote -v` |
+| Agregar remoto | `git remote add origin URL` |
+| Cambiar URL del remoto | `git remote set-url origin URL` |
+| Primer push | `git push -u origin main` |
+| Subir commits | `git push` |
+| Traer y aplicar cambios | `git pull` |
+| Traer información sin aplicarla | `git fetch` |
+
+---
+
+## Ramas
+
+| Acción | Comando |
+|---|---|
+| Ver ramas | `git branch` |
+| Crear rama y entrar | `git switch -c nombre-rama` |
+| Cambiar de rama | `git switch nombre-rama` |
+| Renombrar rama actual a `main` | `git branch -M main` |
+| Fusionar una rama | `git merge nombre-rama` |
+
+---
+
+## Deshacer cambios
+
+| Acción | Comando |
+|---|---|
+| Restaurar archivo | `git restore archivo` |
+| Sacar archivo del staging | `git restore --staged archivo` |
+
+---
+
+## Flujo básico local
+
+```bash
+git status
+git add .
+git commit -m "mensaje"
+```
+
+---
+
+## Flujo de un repositorio ya clonado
+
+```bash
+git pull
+git status
+git add .
+git commit -m "mensaje"
+git push
+```
+
+---
+
+## Crear local y publicar en remoto
+
+```bash
+git init
+git add .
+git commit -m "Primer commit"
+git remote add origin URL
+git branch -M main
+git push -u origin main
+```
+
+---
+
+## Clonar un repositorio existente
+
+```bash
+git clone URL
+cd repositorio
+git status
+```
+
+---
+
+## Idea principal
+
+```text
+git commit = guarda cambios LOCALMENTE
+
+git push   = envía commits al REMOTO
+
+git pull   = trae cambios desde el REMOTO
+
+git clone  = crea una copia LOCAL de un repositorio REMOTO
+```
